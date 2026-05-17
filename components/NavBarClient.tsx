@@ -13,17 +13,22 @@ export default function NavBarClient({ isLoggedIn }: Props) {
 
   async function handleLogout() {
     const supabase = createClient()
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error('Sign-out failed:', error.message)
+      return
+    }
     router.refresh()
   }
 
   return (
-    <nav className="flex h-13 items-center justify-between bg-[#1a1a2e] px-5">
+    <nav aria-label="Main navigation" className="flex h-13 items-center justify-between bg-[#1a1a2e] px-5">
       <Link href="/" className="text-lg font-bold text-white tracking-tight">
         Minton<span className="text-violet-400">Log</span>
       </Link>
       {isLoggedIn ? (
         <button
+          type="button"
           onClick={handleLogout}
           className="rounded-lg bg-violet-700 px-3 py-1.5 text-sm text-white hover:bg-violet-600 transition-colors"
         >
