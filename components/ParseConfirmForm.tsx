@@ -3,6 +3,7 @@
 
 import type { ParseResult } from '@/types'
 import type { ReactNode } from 'react'
+import { useTransition, useState } from 'react'
 
 const CONFIDENCE_THRESHOLD = 0.7
 
@@ -34,12 +35,21 @@ export default function ParseConfirmForm({
   file,
 }: Props) {
   const { confidence } = parsed
+  const [isPending, startTransition] = useTransition()
+  const [submitError, setSubmitError] = useState('')
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    setSubmitError('')
     const fd = new FormData(e.currentTarget)
     fd.append('file', file)
-    await action(fd)
+    startTransition(async () => {
+      try {
+        await action(fd)
+      } catch (err) {
+        setSubmitError(err instanceof Error ? err.message : '저장에 실패했어요. 다시 시도해주세요.')
+      }
+    })
   }
 
   return (
@@ -59,8 +69,9 @@ export default function ParseConfirmForm({
 
       {/* 대회명 */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">대회명</label>
+        <label htmlFor="field-name" className="mb-1 block text-sm font-medium text-gray-700">대회명</label>
         <input
+          id="field-name"
           name="name"
           defaultValue={parsed.name ?? ''}
           required
@@ -73,8 +84,9 @@ export default function ParseConfirmForm({
       {/* 날짜 + 종목 */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">날짜</label>
+          <label htmlFor="field-date" className="mb-1 block text-sm font-medium text-gray-700">날짜</label>
           <input
+            id="field-date"
             name="date"
             type="date"
             defaultValue={parsed.date ?? ''}
@@ -84,8 +96,9 @@ export default function ParseConfirmForm({
           {fieldHint(confidence.date)}
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">종목</label>
+          <label htmlFor="field-event" className="mb-1 block text-sm font-medium text-gray-700">종목</label>
           <select
+            id="field-event"
             name="event"
             defaultValue={parsed.event ?? ''}
             required
@@ -103,8 +116,9 @@ export default function ParseConfirmForm({
       {/* 부수/조 + 순위 */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">부수/조</label>
+          <label htmlFor="field-category" className="mb-1 block text-sm font-medium text-gray-700">부수/조</label>
           <input
+            id="field-category"
             name="category"
             defaultValue={parsed.category ?? ''}
             className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none ${fieldClass(confidence.category)}`}
@@ -113,8 +127,9 @@ export default function ParseConfirmForm({
           {fieldHint(confidence.category)}
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">순위/결과</label>
+          <label htmlFor="field-placement" className="mb-1 block text-sm font-medium text-gray-700">순위/결과</label>
           <input
+            id="field-placement"
             name="placement"
             defaultValue={parsed.placement ?? ''}
             required
@@ -127,8 +142,9 @@ export default function ParseConfirmForm({
 
       {/* 장소 (선택) */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">장소 (선택)</label>
+        <label htmlFor="field-venue" className="mb-1 block text-sm font-medium text-gray-700">장소 (선택)</label>
         <input
+          id="field-venue"
           name="venue"
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
           placeholder="수원실내체육관"
@@ -137,19 +153,24 @@ export default function ParseConfirmForm({
 
       {/* 메모 (선택) */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">메모 (선택)</label>
+        <label htmlFor="field-note" className="mb-1 block text-sm font-medium text-gray-700">메모 (선택)</label>
         <input
+          id="field-note"
           name="note"
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
           placeholder="파트너 이름, 특이사항 등"
         />
       </div>
 
+      {submitError && (
+        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{submitError}</p>
+      )}
       <button
         type="submit"
-        className="w-full rounded-xl bg-violet-600 py-3.5 text-base font-semibold text-white hover:bg-violet-500 transition-colors"
+        disabled={isPending}
+        className="w-full rounded-xl bg-violet-600 py-3.5 text-base font-semibold text-white hover:bg-violet-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        저장하기 →
+        {isPending ? '저장 중...' : '저장하기 →'}
       </button>
     </form>
   )

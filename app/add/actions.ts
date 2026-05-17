@@ -4,6 +4,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+const MAX_FILE_BYTES = 10 * 1024 * 1024
+
 export async function saveTournament(formData: FormData) {
   const supabase = await createClient()
   const {
@@ -21,11 +25,29 @@ export async function saveTournament(formData: FormData) {
   const venue = (formData.get('venue') as string) || null
   const note = (formData.get('note') as string) || null
 
+  // Server-side file validation (client cannot be trusted)
+  if (file && file.size > 0) {
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      throw new Error('Unsupported file type')
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      throw new Error('File too large')
+    }
+  }
+
+  if (!name?.trim() || !date?.trim() || !event?.trim() || !placement?.trim()) {
+    throw new Error('Required fields missing')
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw new Error('Invalid date format')
+  }
+
   let screenshot_url: string | null = null
 
   if (file && file.size > 0) {
-    const ext = file.name.split('.').pop() ?? 'jpg'
-    const path = `${Date.now()}.${ext}`
+    const rawExt = file.name.split('.').pop()?.toLowerCase() ?? ''
+    const ext = ALLOWED_EXTENSIONS.includes(rawExt) ? rawExt : 'jpg'
+    const path = `${crypto.randomUUID()}.${ext}`
 
     const { error: uploadError } = await supabase.storage
       .from('screenshots')
