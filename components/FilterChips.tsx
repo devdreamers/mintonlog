@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Props {
@@ -7,7 +8,7 @@ interface Props {
   events: string[]
 }
 
-export default function FilterChips({ years, events }: Props) {
+function FilterChipsInner({ years, events }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const activeYear = searchParams.get('year') ?? ''
@@ -23,9 +24,12 @@ export default function FilterChips({ years, events }: Props) {
     router.push(`/?${params.toString()}`)
   }
 
+  // Filter out 'award' from events prop to prevent duplication with the hardcoded chip
+  const safeEvents = events.filter((e) => e !== 'award')
+
   const chips = [
     ...years.map((y) => ({ label: y, key: 'year' as const, value: y })),
-    ...events.map((e) => ({ label: e, key: 'event' as const, value: e })),
+    ...safeEvents.map((e) => ({ label: e, key: 'event' as const, value: e })),
     { label: '수상만', key: 'event' as const, value: 'award' },
   ]
 
@@ -52,5 +56,17 @@ export default function FilterChips({ years, events }: Props) {
         )
       })}
     </div>
+  )
+}
+
+export default function FilterChips(props: Props) {
+  return (
+    <Suspense
+      fallback={
+        <div className="h-11 border-b border-gray-200 bg-white" />
+      }
+    >
+      <FilterChipsInner {...props} />
+    </Suspense>
   )
 }
