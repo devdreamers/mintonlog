@@ -13,8 +13,7 @@ function getStyle(placement: string): { bg: string; content: string } {
   if (placement === '3위' || placement === '공동3위') {
     return { bg: 'bg-orange-100', content: '🥉' }
   }
-  const short = placement.replace(/강$/, '강').replace(/위$/, '위')
-  return { bg: 'bg-violet-100', content: short }
+  return { bg: 'bg-violet-100', content: placement }
 }
 
 export default function MedalBadge({ placement }: Props) {
@@ -23,6 +22,7 @@ export default function MedalBadge({ placement }: Props) {
 
   return (
     <div
+      aria-label={placement}
       className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${bg} ${
         isEmoji ? 'text-xl' : 'text-xs font-bold text-violet-700'
       }`}

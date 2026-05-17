@@ -20,7 +20,7 @@ export default function TournamentCard({ tournament }: Props) {
     .join(' · ')
 
   return (
-    <Link href={`/${tournament.id}`}>
+    <Link href={`/${tournament.id}`} aria-label={tournament.name}>
       <div className="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
         <MedalBadge placement={tournament.placement} />
         <div className="min-w-0 flex-1">
