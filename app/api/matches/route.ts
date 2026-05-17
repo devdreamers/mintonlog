@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
     .order('created_at', { ascending: true })
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[api/matches]', error.message)
+    return NextResponse.json({ error: 'Failed to fetch matches' }, { status: 500 })
   }
 
   return NextResponse.json(data as Match[])

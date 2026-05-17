@@ -51,8 +51,10 @@ export default async function TournamentDetailPage({ params }: Props) {
         <div className="flex items-start gap-4">
           <MedalBadge placement={tournament.placement} />
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-gray-900 truncate">{tournament.name}</h1>
-            <p className="mt-0.5 text-sm text-gray-500">{tournament.date}</p>
+            <h1 className="text-lg font-bold text-gray-900 break-words">{tournament.name}</h1>
+            <time dateTime={tournament.date} className="mt-0.5 text-sm text-gray-500">
+              {new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(tournament.date + 'T00:00:00'))}
+            </time>
             {meta && <p className="mt-0.5 text-xs text-gray-400">{meta}</p>}
           </div>
           <span className="shrink-0 text-lg font-bold text-violet-600">

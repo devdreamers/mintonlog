@@ -20,12 +20,19 @@ export default function MatchSection({
   const [showForm, setShowForm] = useState(false)
 
   async function refreshMatches() {
-    const res = await fetch(`/api/matches?tournament_id=${tournamentId}`)
-    if (res.ok) {
-      const data = await res.json()
-      setMatches(data as Match[])
+    try {
+      const res = await fetch(`/api/matches?tournament_id=${tournamentId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setMatches(data as Match[])
+      } else {
+        console.error('Failed to refresh matches', res.status)
+      }
+    } catch (err) {
+      console.error('Network error refreshing matches', err)
+    } finally {
+      setShowForm(false)
     }
-    setShowForm(false)
   }
 
   return (
