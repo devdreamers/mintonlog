@@ -20,15 +20,18 @@ export default async function HomePage({
   const { year, event } = await searchParams
   const supabase = await createClient()
 
-  // All tournaments for stats calculation
-  const { data: allTournaments } = await supabase
+  // All tournaments for stats, years, and events
+  const { data: allRaw, error: allError } = await supabase
     .from('tournaments')
-    .select('placement')
-    .order('date', { ascending: false })
+    .select('placement, date, event')
+  if (allError) throw allError
+  const allItems = (allRaw ?? []) as { placement: string; date: string; event: string }[]
 
-  const stats = computeStats(
-    (allTournaments ?? []).map((t: { placement: string }) => t.placement)
+  const stats = computeStats(allItems.map((t) => t.placement))
+  const years = [...new Set(allItems.map((t) => t.date.slice(0, 4)))].sort(
+    (a, b) => Number(b) - Number(a)
   )
+  const events = [...new Set(allItems.map((t) => t.event))].filter(Boolean)
 
   // Filtered tournaments for display
   let query = supabase
@@ -46,7 +49,8 @@ export default async function HomePage({
     query = query.eq('event', event)
   }
 
-  const { data: tournaments } = await query
+  const { data: tournaments, error: filteredError } = await query
+  if (filteredError) throw filteredError
 
   // Group by year
   const byYear: Record<string, Tournament[]> = {}
@@ -55,16 +59,6 @@ export default async function HomePage({
     if (!byYear[y]) byYear[y] = []
     byYear[y].push(t)
   }
-
-  // Distinct values for filter chips
-  const { data: allRaw } = await supabase
-    .from('tournaments')
-    .select('date, event')
-  const allItems = (allRaw ?? []) as { date: string; event: string }[]
-  const years = [...new Set(allItems.map((t) => t.date.slice(0, 4)))].sort(
-    (a, b) => Number(b) - Number(a)
-  )
-  const events = [...new Set(allItems.map((t) => t.event))].filter(Boolean)
 
   return (
     <main>
@@ -76,7 +70,7 @@ export default async function HomePage({
             아직 등록된 대회가 없어요
           </p>
         )}
-        {Object.entries(byYear).map(([yr, items]) => (
+        {Object.entries(byYear).sort(([a], [b]) => Number(b) - Number(a)).map(([yr, items]) => (
           <div key={yr}>
             <p className="mb-2 mt-4 text-xs font-semibold uppercase tracking-wider text-gray-400">
               {yr}년
