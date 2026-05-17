@@ -1,7 +1,7 @@
 // app/add/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import UploadDropzone from '@/components/UploadDropzone'
 import ParseConfirmForm from '@/components/ParseConfirmForm'
 import { saveTournament } from './actions'
@@ -23,7 +23,7 @@ function StepIndicator({ step }: { step: Step }) {
   const activeIdx = steps.findIndex((s) => s.key === step)
 
   return (
-    <div className="flex items-center justify-center gap-2 border-b border-gray-200 bg-white py-3">
+    <div role="navigation" aria-label="진행 단계" className="flex items-center justify-center gap-2 border-b border-gray-200 bg-white py-3">
       {steps.map((s, i) => {
         const isDone = i < activeIdx
         const isActive = i === activeIdx
@@ -32,6 +32,7 @@ function StepIndicator({ step }: { step: Step }) {
             {i > 0 && <div className="h-px w-6 bg-gray-200" />}
             <div className="flex items-center gap-1.5">
               <div
+                aria-current={isActive ? 'step' : undefined}
                 className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${
                   isDone
                     ? 'bg-green-500 text-white'
@@ -60,14 +61,23 @@ function StepIndicator({ step }: { step: Step }) {
 export default function AddPage() {
   const [step, setStep] = useState<Step>('upload')
   const [file, setFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState('')
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [parsed, setParsed] = useState<ParseResult>(EMPTY_PARSE)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
+
   async function handleFileSelect(selectedFile: File) {
     setFile(selectedFile)
-    setPreviewUrl(URL.createObjectURL(selectedFile))
+    setPreviewUrl(prev => {
+      if (prev) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(selectedFile)
+    })
     setError('')
     setIsLoading(true)
 
@@ -79,12 +89,15 @@ export default function AddPage() {
       if (res.ok) {
         const data = await res.json()
         setParsed(data)
-      } else {
-        // Parsing failed — fall back to empty form
+      } else if (res.status === 422) {
         setParsed(EMPTY_PARSE)
-        if (res.status !== 422) {
-          setError('AI 파싱에 실패했어요. 직접 입력해주세요.')
-        }
+        // 422 = parse couldn't extract info — silent fallback to empty form
+      } else if (res.status === 413) {
+        setParsed(EMPTY_PARSE)
+        setError('파일이 너무 커요. 10MB 이하로 올려주세요.')
+      } else {
+        setParsed(EMPTY_PARSE)
+        setError('AI 파싱에 실패했어요. 직접 입력해주세요.')
       }
     } catch {
       setParsed(EMPTY_PARSE)
@@ -116,7 +129,7 @@ export default function AddPage() {
           </div>
         )}
 
-        {step === 'confirm' && file && (
+        {step === 'confirm' && file && previewUrl && (
           <div>
             <h1 className="mb-2 text-lg font-bold text-gray-900">파싱 결과 확인</h1>
             {error && (
@@ -133,9 +146,10 @@ export default function AddPage() {
             <button
               type="button"
               onClick={() => {
+                if (previewUrl) URL.revokeObjectURL(previewUrl)
                 setStep('upload')
                 setFile(null)
-                setPreviewUrl('')
+                setPreviewUrl(null)
                 setError('')
               }}
               className="mt-3 w-full rounded-xl border border-gray-300 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
