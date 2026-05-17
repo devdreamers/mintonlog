@@ -23,6 +23,9 @@ create table if not exists matches (
   scores jsonb not null default '[]'::jsonb
 );
 
+create index on matches (tournament_id);
+create index on tournaments (date desc);
+
 -- Supabase Storage 버킷은 대시보드에서 생성:
 -- 버킷 이름: screenshots
 -- Public: true

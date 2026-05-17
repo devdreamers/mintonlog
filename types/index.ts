@@ -18,6 +18,7 @@ export interface Match {
   round: string         // '8강', '준결승', '결승' 등
   opponent: string | null
   result: 'win' | 'loss'
+  // Supabase returns JSONB as unknown at runtime — always cast: `data as Match[]`
   scores: ScoreGame[]
   created_at: string
 }
