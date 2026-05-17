@@ -19,12 +19,14 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
   const [error, setError] = useState('')
 
   function addGame() {
+    if (games.length >= 5) return
     setGames((prev) => [...prev, { game: prev.length + 1, us: 0, them: 0 }])
   }
 
   function updateGame(idx: number, field: 'us' | 'them', value: number) {
+    const clamped = Math.max(0, Math.min(30, Number.isNaN(value) ? 0 : value))
     setGames((prev) =>
-      prev.map((g, i) => (i === idx ? { ...g, [field]: value } : g))
+      prev.map((g, i) => (i === idx ? { ...g, [field]: clamped } : g))
     )
   }
 
@@ -94,7 +96,7 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
       </div>
       <div className="mt-2 flex flex-col gap-1">
         {games.map((g, i) => (
-          <div key={i} className="flex items-center gap-2 text-sm">
+          <div key={g.game} className="flex items-center gap-2 text-sm">
             <span className="w-12 text-xs text-gray-500">게임 {g.game}</span>
             <input
               type="number"
@@ -120,7 +122,8 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
         <button
           type="button"
           onClick={addGame}
-          className="mt-1 text-left text-xs text-violet-600 underline"
+          disabled={games.length >= 5}
+          className="mt-1 text-left text-xs text-violet-600 underline disabled:opacity-40 disabled:cursor-not-allowed"
         >
           + 게임 추가
         </button>
