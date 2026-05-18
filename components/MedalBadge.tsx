@@ -13,7 +13,7 @@ function getStyle(placement: string): { bg: string; content: string } {
   if (placement === '3위' || placement === '공동3위') {
     return { bg: 'bg-orange-100', content: '🥉' }
   }
-  if (placement === '예선탈락') {
+  if (placement === '예선탈락' || placement === '예탈') {
     return { bg: 'bg-green-50', content: '🌱' }
   }
   return { bg: 'bg-violet-100', content: placement }
