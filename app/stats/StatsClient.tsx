@@ -268,7 +268,7 @@ export default function StatsClient({
                     </div>
                     <div className="mt-1 flex gap-3 text-xs text-gray-400">
                       <span>대회 {s.count}회</span>
-                      <span>경기 {s.wins + s.losses}전</span>
+                      <span>{s.wins + s.losses}경기</span>
                       <span>{s.wins}승 {s.losses}패</span>
                     </div>
                     {/* progress bar */}
