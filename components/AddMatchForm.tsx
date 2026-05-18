@@ -7,13 +7,14 @@ import { createClient } from '@/lib/supabase/client'
 interface Props {
   tournamentId: string
   onAdded: () => void
+  onCancel?: () => void
 }
 
 function clamp(v: number) {
   return Math.max(0, Math.min(30, Number.isNaN(v) ? 0 : v))
 }
 
-export default function AddMatchForm({ tournamentId, onAdded }: Props) {
+export default function AddMatchForm({ tournamentId, onAdded, onCancel }: Props) {
   const [round, setRound] = useState('')
   const [opponentTeam, setOpponentTeam] = useState('')
   const [opponent1, setOpponent1] = useState('')
@@ -149,13 +150,24 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={saving}
-        className="mt-3 w-full rounded-lg bg-violet-600 py-2 text-sm font-semibold text-white hover:bg-violet-500 disabled:opacity-50 transition-colors"
-      >
-        {saving ? '저장 중...' : '저장'}
-      </button>
+      <div className="mt-3 flex gap-2">
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex-1 rounded-lg bg-violet-600 py-2 text-sm font-semibold text-white hover:bg-violet-500 disabled:opacity-50 transition-colors"
+        >
+          {saving ? '저장 중...' : '저장'}
+        </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-lg border border-gray-300 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            취소
+          </button>
+        )}
+      </div>
     </form>
   )
 }

@@ -26,6 +26,12 @@ export default function NavBarClient({ isLoggedIn }: Props) {
       <Link href="/" className="text-lg font-bold text-white tracking-tight">
         Minton<span className="text-violet-400">Log</span>
       </Link>
+      <Link
+        href="/stats"
+        className="rounded-lg px-3 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+      >
+        분석
+      </Link>
       {isLoggedIn ? (
         <button
           type="button"

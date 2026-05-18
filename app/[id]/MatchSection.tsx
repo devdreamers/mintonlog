@@ -56,6 +56,7 @@ export default function MatchSection({
           <AddMatchForm
             tournamentId={tournamentId}
             onAdded={refreshMatches}
+            onCancel={() => setShowForm(false)}
           />
         </div>
       )}
