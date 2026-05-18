@@ -9,7 +9,7 @@ export interface Tournament {
   placement: string     // '1위', '8강' 등
   venue: string | null
   note: string | null
-  screenshot_url: string | null
+  screenshot_url: string
 }
 
 export interface Match {

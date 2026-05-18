@@ -42,7 +42,7 @@ export async function saveTournament(formData: FormData) {
     throw new Error('Invalid date format')
   }
 
-  let screenshot_url: string | null = null
+  let screenshot_url = ''
 
   if (file && file.size > 0) {
     const rawExt = file.name.split('.').pop()?.toLowerCase() ?? ''
