@@ -15,12 +15,8 @@ interface EditState {
   round: string
   opponent: string
   result: 'win' | 'loss'
-  us: number
-  them: number
-}
-
-function clamp(v: number) {
-  return Math.max(0, Math.min(30, Number.isNaN(v) ? 0 : v))
+  us: string
+  them: string
 }
 
 function toEditState(match: Match): EditState {
@@ -29,9 +25,15 @@ function toEditState(match: Match): EditState {
     round: match.round,
     opponent: match.opponent ?? '',
     result: match.result,
-    us: score.us,
-    them: score.them,
+    us: String(score.us),
+    them: String(score.them),
   }
+}
+
+function handleScoreChange(value: string, setter: (v: string) => void) {
+  if (value === '') { setter(''); return }
+  const n = Math.max(0, Math.min(30, Number(value)))
+  setter(String(n))
 }
 
 export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: Props) {
@@ -64,7 +66,7 @@ export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: P
         round: edit.round.trim(),
         opponent: edit.opponent.trim() || null,
         result: edit.result,
-        scores: [{ game: 1, us: edit.us, them: edit.them }],
+        scores: [{ game: 1, us: Number(edit.us) || 0, them: Number(edit.them) || 0 }],
       })
       .eq('id', matchId)
 
@@ -140,20 +142,24 @@ export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: P
                     <span className="text-xs text-gray-500 w-8">점수</span>
                     <input
                       type="number"
+                      inputMode="numeric"
                       min={0}
                       max={30}
                       value={edit.us}
-                      onChange={(e) => setEdit({ ...edit, us: clamp(Number(e.target.value)) })}
+                      placeholder="0"
+                      onChange={(e) => handleScoreChange(e.target.value, (v) => setEdit({ ...edit, us: v }))}
                       className="w-14 rounded border border-gray-300 px-2 py-1 text-center text-sm"
                       aria-label="내 점수"
                     />
                     <span className="text-gray-400" aria-hidden="true">:</span>
                     <input
                       type="number"
+                      inputMode="numeric"
                       min={0}
                       max={30}
                       value={edit.them}
-                      onChange={(e) => setEdit({ ...edit, them: clamp(Number(e.target.value)) })}
+                      placeholder="0"
+                      onChange={(e) => handleScoreChange(e.target.value, (v) => setEdit({ ...edit, them: v }))}
                       className="w-14 rounded border border-gray-300 px-2 py-1 text-center text-sm"
                       aria-label="상대 점수"
                     />

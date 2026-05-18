@@ -7,14 +7,14 @@ import ParseConfirmForm from '@/components/ParseConfirmForm'
 import { saveTournament } from './actions'
 import type { ParseResult } from '@/types'
 
-type Step = 'upload' | 'confirm'
+type Step = 'choose' | 'upload' | 'confirm'
 
 const EMPTY_PARSE: ParseResult = {
   name: null, date: null, event: null, category: null, placement: null,
   confidence: { name: 0, date: 0, event: 0, category: 0, placement: 0 },
 }
 
-function StepIndicator({ step }: { step: Step }) {
+function AiStepIndicator({ step }: { step: 'upload' | 'confirm' }) {
   const steps = [
     { key: 'upload', label: '업로드' },
     { key: 'confirm', label: 'AI 파싱 확인' },
@@ -43,11 +43,7 @@ function StepIndicator({ step }: { step: Step }) {
               >
                 {isDone ? '✓' : i + 1}
               </div>
-              <span
-                className={`text-xs ${
-                  isActive ? 'font-semibold text-violet-600' : 'text-gray-400'
-                }`}
-              >
+              <span className={`text-xs ${isActive ? 'font-semibold text-violet-600' : 'text-gray-400'}`}>
                 {s.label}
               </span>
             </div>
@@ -59,7 +55,8 @@ function StepIndicator({ step }: { step: Step }) {
 }
 
 export default function AddPage() {
-  const [step, setStep] = useState<Step>('upload')
+  const [step, setStep] = useState<Step>('choose')
+  const [isManual, setIsManual] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [parsed, setParsed] = useState<ParseResult>(EMPTY_PARSE)
@@ -91,7 +88,6 @@ export default function AddPage() {
         setParsed(data)
       } else if (res.status === 422) {
         setParsed(EMPTY_PARSE)
-        // 422 = parse couldn't extract info — silent fallback to empty form
       } else if (res.status === 413) {
         setParsed(EMPTY_PARSE)
         setError('파일이 너무 커요. 10MB 이하로 올려주세요.')
@@ -108,13 +104,73 @@ export default function AddPage() {
     }
   }
 
+  function goManual() {
+    setIsManual(true)
+    setParsed(EMPTY_PARSE)
+    setFile(null)
+    setPreviewUrl(null)
+    setError('')
+    setStep('confirm')
+  }
+
+  function goAi() {
+    setIsManual(false)
+    setStep('upload')
+  }
+
+  function backToChoose() {
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    setStep('choose')
+    setIsManual(false)
+    setFile(null)
+    setPreviewUrl(null)
+    setError('')
+    setParsed(EMPTY_PARSE)
+  }
+
   return (
     <main>
-      <StepIndicator step={step} />
+      {step === 'upload' && <AiStepIndicator step="upload" />}
+      {step === 'confirm' && !isManual && <AiStepIndicator step="confirm" />}
+
       <div className="mx-auto max-w-lg px-5 py-6">
-        {step === 'upload' && (
+
+        {/* 입력 방법 선택 */}
+        {step === 'choose' && (
           <div>
             <h1 className="mb-2 text-lg font-bold text-gray-900">대회 기록 추가</h1>
+            <p className="mb-5 text-sm text-gray-500">입력 방법을 선택해주세요</p>
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={goAi}
+                className="flex items-center gap-4 rounded-2xl border-2 border-violet-200 bg-violet-50 p-5 text-left hover:border-violet-400 hover:bg-violet-100 transition-colors"
+              >
+                <span className="text-3xl" aria-hidden="true">📷</span>
+                <div>
+                  <p className="font-semibold text-gray-900">AI 파싱</p>
+                  <p className="mt-0.5 text-sm text-gray-500">스크린샷을 올리면 AI가 자동으로 읽어드려요</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={goManual}
+                className="flex items-center gap-4 rounded-2xl border-2 border-gray-200 bg-gray-50 p-5 text-left hover:border-gray-300 hover:bg-gray-100 transition-colors"
+              >
+                <span className="text-3xl" aria-hidden="true">✏️</span>
+                <div>
+                  <p className="font-semibold text-gray-900">직접 입력</p>
+                  <p className="mt-0.5 text-sm text-gray-500">대회 정보를 직접 입력할게요</p>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* AI 파싱: 업로드 */}
+        {step === 'upload' && (
+          <div>
+            <h1 className="mb-2 text-lg font-bold text-gray-900">스크린샷 업로드</h1>
             <p className="mb-5 text-sm text-gray-500">
               스크린샷을 올리면 AI가 대회 정보를 자동으로 읽어드려요
             </p>
@@ -126,12 +182,22 @@ export default function AddPage() {
             ) : (
               <UploadDropzone onFileSelect={handleFileSelect} />
             )}
+            <button
+              type="button"
+              onClick={backToChoose}
+              className="mt-3 w-full rounded-xl border border-gray-300 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              뒤로
+            </button>
           </div>
         )}
 
-        {step === 'confirm' && file && previewUrl && (
+        {/* 확인/입력 폼 */}
+        {step === 'confirm' && (isManual || (file && previewUrl)) && (
           <div>
-            <h1 className="mb-2 text-lg font-bold text-gray-900">파싱 결과 확인</h1>
+            <h1 className="mb-2 text-lg font-bold text-gray-900">
+              {isManual ? '대회 정보 입력' : '파싱 결과 확인'}
+            </h1>
             {error && (
               <div className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
                 {error}
@@ -142,19 +208,14 @@ export default function AddPage() {
               screenshotPreviewUrl={previewUrl}
               action={saveTournament}
               file={file}
+              isManual={isManual}
             />
             <button
               type="button"
-              onClick={() => {
-                if (previewUrl) URL.revokeObjectURL(previewUrl)
-                setStep('upload')
-                setFile(null)
-                setPreviewUrl(null)
-                setError('')
-              }}
+              onClick={isManual ? backToChoose : backToChoose}
               className="mt-3 w-full rounded-xl border border-gray-300 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
             >
-              다시 업로드
+              뒤로
             </button>
           </div>
         )}

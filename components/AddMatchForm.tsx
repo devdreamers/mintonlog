@@ -17,8 +17,8 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
   const [round, setRound] = useState('')
   const [opponent, setOpponent] = useState('')
   const [result, setResult] = useState<'win' | 'loss'>('win')
-  const [us, setUs] = useState(0)
-  const [them, setThem] = useState(0)
+  const [us, setUs] = useState('')
+  const [them, setThem] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -34,7 +34,7 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
       round: round.trim(),
       opponent: opponent.trim() || null,
       result,
-      scores: [{ game: 1, us, them }],
+      scores: [{ game: 1, us: Number(us) || 0, them: Number(them) || 0 }],
     })
 
     if (insertError) {
@@ -46,8 +46,8 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
     setRound('')
     setOpponent('')
     setResult('win')
-    setUs(0)
-    setThem(0)
+    setUs('')
+    setThem('')
     setSaving(false)
     onAdded()
   }
@@ -88,20 +88,34 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
         <span className="text-xs text-gray-500 w-8">점수</span>
         <input
           type="number"
+          inputMode="numeric"
           min={0}
           max={30}
           value={us}
-          onChange={(e) => setUs(clamp(Number(e.target.value)))}
+          placeholder="0"
+          onChange={(e) => {
+            const v = e.target.value
+            if (v === '') { setUs(''); return }
+            const n = Math.max(0, Math.min(30, Number(v)))
+            setUs(String(n))
+          }}
           className="w-14 rounded border border-gray-300 px-2 py-1 text-center text-sm"
           aria-label="내 점수"
         />
         <span className="text-gray-400" aria-hidden="true">:</span>
         <input
           type="number"
+          inputMode="numeric"
           min={0}
           max={30}
           value={them}
-          onChange={(e) => setThem(clamp(Number(e.target.value)))}
+          placeholder="0"
+          onChange={(e) => {
+            const v = e.target.value
+            if (v === '') { setThem(''); return }
+            const n = Math.max(0, Math.min(30, Number(v)))
+            setThem(String(n))
+          }}
           className="w-14 rounded border border-gray-300 px-2 py-1 text-center text-sm"
           aria-label="상대 점수"
         />
