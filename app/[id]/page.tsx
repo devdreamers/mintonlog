@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import TournamentSection from './TournamentSection'
 import MatchSection from './MatchSection'
+import PartnerShareButton from '@/components/PartnerShareButton'
 import type { Tournament, Match } from '@/types'
 import type { Metadata } from 'next'
 
@@ -57,6 +58,13 @@ export default async function TournamentDetailPage({ params }: Props) {
             alt="대회 결과 스크린샷"
             className="mt-2 w-full object-contain"
           />
+        </div>
+      )}
+
+      {/* Partner share */}
+      {isLoggedIn && matches.length > 0 && (
+        <div className="mb-4 flex justify-end">
+          <PartnerShareButton tournament={tournament} matches={matches} />
         </div>
       )}
 

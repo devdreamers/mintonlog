@@ -39,10 +39,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Unauthenticated: redirect everything except /login, /auth/*, /s/* → /login
+  // Unauthenticated: redirect everything except /login, /auth/*, /s/* → /login?next=...
   if (!user && pathname !== '/login' && !pathname.startsWith('/auth') && !pathname.startsWith('/s/')) {
     const url = request.nextUrl.clone()
+    const next = pathname + (request.nextUrl.search || '')
     url.pathname = '/login'
+    url.search = `?next=${encodeURIComponent(next)}`
     return NextResponse.redirect(url)
   }
 
