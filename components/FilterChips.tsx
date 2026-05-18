@@ -6,15 +6,17 @@ import { useRouter, useSearchParams } from 'next/navigation'
 interface Props {
   years: string[]
   events: string[]
+  categories: string[]
 }
 
-function FilterChipsInner({ years, events }: Props) {
+function FilterChipsInner({ years, events, categories }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const activeYear = searchParams.get('year') ?? ''
   const activeEvent = searchParams.get('event') ?? ''
+  const activeCategory = searchParams.get('category') ?? ''
 
-  function setFilter(key: 'year' | 'event', value: string) {
+  function setFilter(key: 'year' | 'event' | 'category', value: string) {
     const params = new URLSearchParams(searchParams.toString())
     if (params.get(key) === value) {
       params.delete(key)
@@ -31,6 +33,7 @@ function FilterChipsInner({ years, events }: Props) {
     ...years.map((y) => ({ label: y, key: 'year' as const, value: y })),
     ...safeEvents.map((e) => ({ label: e, key: 'event' as const, value: e })),
     { label: '수상만', key: 'event' as const, value: 'award' },
+    ...categories.map((c) => ({ label: c, key: 'category' as const, value: c })),
   ]
 
   return (
@@ -38,7 +41,8 @@ function FilterChipsInner({ years, events }: Props) {
       {chips.map(({ label, key, value }) => {
         const isActive =
           (key === 'year' && activeYear === value) ||
-          (key === 'event' && activeEvent === value)
+          (key === 'event' && activeEvent === value) ||
+          (key === 'category' && activeCategory === value)
         return (
           <button
             type="button"
@@ -61,11 +65,7 @@ function FilterChipsInner({ years, events }: Props) {
 
 export default function FilterChips(props: Props) {
   return (
-    <Suspense
-      fallback={
-        <div className="h-11 border-b border-gray-200 bg-white" />
-      }
-    >
+    <Suspense fallback={<div className="h-11 border-b border-gray-200 bg-white" />}>
       <FilterChipsInner {...props} />
     </Suspense>
   )

@@ -10,6 +10,7 @@ import type { Tournament } from '@/types'
 interface SearchParams {
   year?: string
   event?: string
+  category?: string
 }
 
 export default async function HomePage({
@@ -17,21 +18,22 @@ export default async function HomePage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const { year, event } = await searchParams
+  const { year, event, category } = await searchParams
   const supabase = await createClient()
 
-  // All tournaments for stats, years, and events
+  // All tournaments for stats, years, events, and categories
   const { data: allRaw, error: allError } = await supabase
     .from('tournaments')
-    .select('placement, date, event')
+    .select('placement, date, event, category')
   if (allError) throw allError
-  const allItems = (allRaw ?? []) as { placement: string; date: string; event: string }[]
+  const allItems = (allRaw ?? []) as { placement: string; date: string; event: string; category: string | null }[]
 
   const stats = computeStats(allItems.map((t) => t.placement))
   const years = [...new Set(allItems.map((t) => t.date.slice(0, 4)))].sort(
     (a, b) => Number(b) - Number(a)
   )
   const events = [...new Set(allItems.map((t) => t.event))].filter(Boolean)
+  const categories = [...new Set(allItems.map((t) => t.category).filter(Boolean) as string[])].sort()
 
   // Filtered tournaments for display
   let query = supabase
@@ -49,6 +51,10 @@ export default async function HomePage({
     query = query.eq('event', event)
   }
 
+  if (category) {
+    query = query.eq('category', category)
+  }
+
   const { data: tournaments, error: filteredError } = await query
   if (filteredError) throw filteredError
 
@@ -63,7 +69,7 @@ export default async function HomePage({
   return (
     <main>
       <StatsBar stats={stats} />
-      <FilterChips years={years} events={events} />
+      <FilterChips years={years} events={events} categories={categories} />
       <div className="px-5 pb-24 pt-3">
         {Object.keys(byYear).length === 0 && (
           <p className="py-12 text-center text-sm text-gray-400">
