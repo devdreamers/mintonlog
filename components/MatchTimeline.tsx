@@ -50,6 +50,8 @@ export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: P
   const [edit, setEdit] = useState<EditState | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   function startEdit(match: Match) {
     setEditingId(match.id)
@@ -61,6 +63,20 @@ export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: P
     setEditingId(null)
     setEdit(null)
     setError('')
+  }
+
+  async function deleteMatch(matchId: string) {
+    setDeleting(true)
+    const supabase = createClient()
+    const { error: err } = await supabase.from('matches').delete().eq('id', matchId)
+    if (err) {
+      setError('삭제에 실패했어요. 다시 시도해주세요.')
+      setDeleting(false)
+      return
+    }
+    setDeletingId(null)
+    setDeleting(false)
+    onMatchUpdated()
   }
 
   async function saveEdit(matchId: string) {
@@ -238,14 +254,48 @@ export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: P
                     )}
                   </div>
                   {isLoggedIn && (
-                    <button
-                      type="button"
-                      onClick={() => startEdit(match)}
-                      className="ml-2 rounded-lg px-2 py-1 text-xs text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                      aria-label="경기 수정"
-                    >
-                      수정
-                    </button>
+                    <div className="ml-2 flex gap-1">
+                      {deletingId === match.id ? (
+                        <>
+                          <span className="self-center text-xs text-gray-500">삭제할까요?</span>
+                          <button
+                            type="button"
+                            onClick={() => deleteMatch(match.id)}
+                            disabled={deleting}
+                            className="rounded-lg bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-400 disabled:opacity-50 transition-colors"
+                          >
+                            {deleting ? '…' : '확인'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeletingId(null)}
+                            disabled={deleting}
+                            className="rounded-lg border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+                          >
+                            취소
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(match)}
+                            className="rounded-lg px-2 py-1 text-xs text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                            aria-label="경기 수정"
+                          >
+                            수정
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeletingId(match.id)}
+                            className="rounded-lg px-2 py-1 text-xs text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                            aria-label="경기 삭제"
+                          >
+                            삭제
+                          </button>
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
