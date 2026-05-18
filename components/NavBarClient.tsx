@@ -23,15 +23,17 @@ export default function NavBarClient({ isLoggedIn }: Props) {
 
   return (
     <nav aria-label="Main navigation" className="flex h-13 items-center justify-between bg-[#1a1a2e] px-5">
-      <Link href="/" className="text-lg font-bold text-white tracking-tight">
-        Minton<span className="text-violet-400">Log</span>
-      </Link>
-      <Link
-        href="/stats"
-        className="rounded-lg px-3 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
-      >
-        분석
-      </Link>
+      <div className="flex items-center gap-4">
+        <Link href="/" className="text-lg font-bold text-white tracking-tight">
+          Minton<span className="text-violet-400">Log</span>
+        </Link>
+        <Link
+          href="/stats"
+          className="rounded-lg px-3 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+        >
+          분석
+        </Link>
+      </div>
       {isLoggedIn ? (
         <button
           type="button"
