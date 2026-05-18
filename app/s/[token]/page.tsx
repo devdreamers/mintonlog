@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { computeStats } from '@/lib/stats'
 import StatsBar from '@/components/StatsBar'
 import MedalBadge from '@/components/MedalBadge'
@@ -11,7 +11,7 @@ export default async function SharedPage({
   params: Promise<{ token: string }>
 }) {
   const { token } = await params
-  const supabase = await createClient()
+  const supabase = createServiceClient()
 
   // Validate token
   const { data: settings } = await supabase
