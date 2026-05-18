@@ -5,6 +5,7 @@ import StatsBar from '@/components/StatsBar'
 import FilterChips from '@/components/FilterChips'
 import TournamentCard from '@/components/TournamentCard'
 import FAB from '@/components/FAB'
+import ShareButton from '@/components/ShareButton'
 import type { Tournament } from '@/types'
 
 interface SearchParams {
@@ -58,6 +59,13 @@ export default async function HomePage({
   const { data: tournaments, error: filteredError } = await query
   if (filteredError) throw filteredError
 
+  // Share token (non-blocking — null if table doesn't exist yet)
+  const { data: shareData } = await supabase
+    .from('share_settings')
+    .select('token')
+    .single()
+  const shareToken = shareData?.token ?? null
+
   // Group by year
   const byYear: Record<string, Tournament[]> = {}
   for (const t of (tournaments ?? []) as Tournament[]) {
@@ -70,6 +78,9 @@ export default async function HomePage({
     <main>
       <StatsBar stats={stats} />
       <FilterChips years={years} events={events} categories={categories} />
+      <div className="flex justify-end border-b border-gray-100 bg-white px-4 py-1">
+        <ShareButton initialToken={shareToken} />
+      </div>
       <div className="px-5 pb-24 pt-3">
         {Object.keys(byYear).length === 0 && (
           <p className="py-12 text-center text-sm text-gray-400">

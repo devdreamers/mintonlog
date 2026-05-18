@@ -39,8 +39,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Unauthenticated: redirect everything except /login and /auth/* → /login
-  if (!user && pathname !== '/login' && !pathname.startsWith('/auth')) {
+  // Unauthenticated: redirect everything except /login, /auth/*, /s/* → /login
+  if (!user && pathname !== '/login' && !pathname.startsWith('/auth') && !pathname.startsWith('/s/')) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
