@@ -13,7 +13,9 @@ interface Props {
 
 interface EditState {
   round: string
-  opponent: string
+  opponent_team: string
+  opponent1: string
+  opponent2: string
   result: 'win' | 'loss'
   us: string
   them: string
@@ -23,7 +25,9 @@ function toEditState(match: Match): EditState {
   const score = match.scores[0] ?? { us: 0, them: 0 }
   return {
     round: match.round,
-    opponent: match.opponent ?? '',
+    opponent_team: match.opponent_team ?? '',
+    opponent1: match.opponent1 ?? '',
+    opponent2: match.opponent2 ?? '',
     result: match.result,
     us: String(score.us),
     them: String(score.them),
@@ -34,6 +38,11 @@ function handleScoreChange(value: string, setter: (v: string) => void) {
   if (value === '') { setter(''); return }
   const n = Math.max(0, Math.min(30, Number(value)))
   setter(String(n))
+}
+
+function opponentLabel(match: Match): string | null {
+  const parts = [match.opponent_team, match.opponent1, match.opponent2].filter(Boolean)
+  return parts.length > 0 ? parts.join(' · ') : null
 }
 
 export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: Props) {
@@ -64,7 +73,9 @@ export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: P
       .from('matches')
       .update({
         round: edit.round.trim(),
-        opponent: edit.opponent.trim() || null,
+        opponent_team: edit.opponent_team.trim() || null,
+        opponent1: edit.opponent1.trim() || null,
+        opponent2: edit.opponent2.trim() || null,
         result: edit.result,
         scores: [{ game: 1, us: Number(edit.us) || 0, them: Number(edit.them) || 0 }],
       })
@@ -113,6 +124,8 @@ export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: P
               {isEditing && edit ? (
                 <div className="flex flex-col gap-2">
                   {error && <p className="text-xs text-red-500">{error}</p>}
+
+                  {/* 라운드 + 결과 */}
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       value={edit.round}
@@ -121,25 +134,45 @@ export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: P
                       className="col-span-2 rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
                       aria-label="라운드"
                     />
-                    <input
-                      value={edit.opponent}
-                      onChange={(e) => setEdit({ ...edit, opponent: e.target.value })}
-                      placeholder="상대 이름 (선택)"
-                      className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
-                      aria-label="상대 이름"
-                    />
                     <select
                       value={edit.result}
                       onChange={(e) => setEdit({ ...edit, result: e.target.value as 'win' | 'loss' })}
-                      className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+                      className="col-span-2 rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
                       aria-label="경기 결과"
                     >
                       <option value="win">승</option>
                       <option value="loss">패</option>
                     </select>
                   </div>
+
+                  {/* 상대팀 + 선수 2명 */}
+                  <input
+                    value={edit.opponent_team}
+                    onChange={(e) => setEdit({ ...edit, opponent_team: e.target.value })}
+                    placeholder="상대팀 이름 (선택)"
+                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+                    aria-label="상대팀 이름"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={edit.opponent1}
+                      onChange={(e) => setEdit({ ...edit, opponent1: e.target.value })}
+                      placeholder="상대 1 (선택)"
+                      className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+                      aria-label="상대 선수 1"
+                    />
+                    <input
+                      value={edit.opponent2}
+                      onChange={(e) => setEdit({ ...edit, opponent2: e.target.value })}
+                      placeholder="상대 2 (선택)"
+                      className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+                      aria-label="상대 선수 2"
+                    />
+                  </div>
+
+                  {/* 점수 */}
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500 w-8">점수</span>
+                    <span className="w-8 text-xs text-gray-500">점수</span>
                     <input
                       type="number"
                       inputMode="numeric"
@@ -164,6 +197,7 @@ export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: P
                       aria-label="상대 점수"
                     />
                   </div>
+
                   <div className="flex gap-2">
                     <button
                       type="button"
@@ -185,10 +219,10 @@ export default function MatchTimeline({ matches, isLoggedIn, onMatchUpdated }: P
               ) : (
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-gray-800">{match.round}</span>
-                      {match.opponent && (
-                        <span className="text-xs text-gray-400">vs {match.opponent}</span>
+                      {opponentLabel(match) && (
+                        <span className="text-xs text-gray-400">vs {opponentLabel(match)}</span>
                       )}
                     </div>
                     {match.scores[0] && (

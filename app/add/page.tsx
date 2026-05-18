@@ -10,8 +10,8 @@ import type { ParseResult } from '@/types'
 type Step = 'choose' | 'upload' | 'confirm'
 
 const EMPTY_PARSE: ParseResult = {
-  name: null, date: null, event: null, category: null, placement: null,
-  confidence: { name: 0, date: 0, event: 0, category: 0, placement: 0 },
+  name: null, date: null, event: null, category: null, placement: null, partner: null,
+  confidence: { name: 0, date: 0, event: 0, category: 0, placement: 0, partner: 0 },
 }
 
 function AiStepIndicator({ step }: { step: 'upload' | 'confirm' }) {

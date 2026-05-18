@@ -23,9 +23,8 @@ export async function saveTournament(formData: FormData) {
   const category = (formData.get('category') as string) ?? ''
   const placement = formData.get('placement') as string
   const venue = (formData.get('venue') as string) || null
-  const note = (formData.get('note') as string) || null
+  const partner = (formData.get('partner') as string) || null
 
-  // Server-side file validation (client cannot be trusted)
   if (file && file.size > 0) {
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       throw new Error('Unsupported file type')
@@ -63,7 +62,7 @@ export async function saveTournament(formData: FormData) {
 
   const { data: tournament, error } = await supabase
     .from('tournaments')
-    .insert({ name, date, event, category, placement, venue, note, screenshot_url })
+    .insert({ name, date, event, category, placement, venue, partner, screenshot_url })
     .select()
     .single()
 

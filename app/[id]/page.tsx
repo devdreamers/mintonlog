@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import MedalBadge from '@/components/MedalBadge'
+import TournamentSection from './TournamentSection'
 import MatchSection from './MatchSection'
 import type { Tournament, Match } from '@/types'
 import type { Metadata } from 'next'
@@ -40,33 +40,10 @@ export default async function TournamentDetailPage({ params }: Props) {
   const matches = (matchesRes.data ?? []) as Match[]
   const isLoggedIn = !!userRes.data.user
 
-  const meta = [tournament.event, tournament.category, tournament.venue]
-    .filter(Boolean)
-    .join(' · ')
-
   return (
     <main className="mx-auto max-w-lg px-5 pb-24 pt-4">
-      {/* Tournament info card */}
-      <div className="mb-5 rounded-2xl bg-white p-5 shadow-sm">
-        <div className="flex items-start gap-4">
-          <MedalBadge placement={tournament.placement} />
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-gray-900 break-words">{tournament.name}</h1>
-            <time dateTime={tournament.date} className="mt-0.5 text-sm text-gray-500">
-              {new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(tournament.date + 'T00:00:00'))}
-            </time>
-            {meta && <p className="mt-0.5 text-xs text-gray-400">{meta}</p>}
-          </div>
-          <span className="shrink-0 text-lg font-bold text-violet-600">
-            {tournament.placement}
-          </span>
-        </div>
-        {tournament.note && (
-          <p className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600">
-            {tournament.note}
-          </p>
-        )}
-      </div>
+      {/* Tournament info */}
+      <TournamentSection tournament={tournament} isLoggedIn={isLoggedIn} />
 
       {/* Original screenshot */}
       {tournament.screenshot_url && (

@@ -121,16 +121,16 @@ export default function ParseConfirmForm({
         </div>
       </div>
 
-      {/* 부수/조 + 순위 */}
+      {/* 나이대/급수 + 순위 */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="field-category" className="mb-1 block text-sm font-medium text-gray-700">부수/조</label>
+          <label htmlFor="field-category" className="mb-1 block text-sm font-medium text-gray-700">나이대/급수</label>
           <input
             id="field-category"
             name="category"
             defaultValue={parsed.category ?? ''}
             className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none ${cls(confidence.category)}`}
-            placeholder="B조"
+            placeholder="예: 30D, 2030BC"
           />
           {hint(confidence.category)}
         </div>
@@ -148,26 +148,28 @@ export default function ParseConfirmForm({
         </div>
       </div>
 
-      {/* 장소 (선택) */}
+      {/* 체육관 (선택) */}
       <div>
-        <label htmlFor="field-venue" className="mb-1 block text-sm font-medium text-gray-700">장소 (선택)</label>
+        <label htmlFor="field-venue" className="mb-1 block text-sm font-medium text-gray-700">체육관 (선택)</label>
         <input
           id="field-venue"
           name="venue"
           className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
-          placeholder="수원실내체육관"
+          placeholder="은평다목적체육관"
         />
       </div>
 
-      {/* 메모 (선택) */}
+      {/* 파트너 (선택) */}
       <div>
-        <label htmlFor="field-note" className="mb-1 block text-sm font-medium text-gray-700">메모 (선택)</label>
+        <label htmlFor="field-partner" className="mb-1 block text-sm font-medium text-gray-700">파트너 (선택)</label>
         <input
-          id="field-note"
-          name="note"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
-          placeholder="파트너 이름, 특이사항 등"
+          id="field-partner"
+          name="partner"
+          defaultValue={parsed.partner ?? ''}
+          className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none ${cls(confidence.partner)}`}
+          placeholder="파트너 이름"
         />
+        {hint(confidence.partner)}
       </div>
 
       {submitError && (
