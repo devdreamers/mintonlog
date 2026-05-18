@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 interface Props {
   isLoggedIn: boolean
@@ -10,6 +10,9 @@ interface Props {
 
 export default function NavBarClient({ isLoggedIn }: Props) {
   const router = useRouter()
+  const pathname = usePathname()
+
+  if (pathname === '/login') return null
 
   async function handleLogout() {
     const supabase = createClient()
