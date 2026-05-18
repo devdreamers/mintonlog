@@ -105,7 +105,7 @@ export default function ParseConfirmForm({
             className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none ${fieldClass(confidence.event)}`}
           >
             <option value="">선택</option>
-            {['남복', '여복', '혼복', '단', '여단'].map((e) => (
+            {['남복', '여복', '혼복', '남단', '여단'].map((e) => (
               <option key={e} value={e}>{e}</option>
             ))}
           </select>

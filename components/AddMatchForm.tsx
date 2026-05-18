@@ -3,32 +3,24 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { ScoreGame } from '@/types'
 
 interface Props {
   tournamentId: string
   onAdded: () => void
 }
 
+function clamp(v: number) {
+  return Math.max(0, Math.min(30, Number.isNaN(v) ? 0 : v))
+}
+
 export default function AddMatchForm({ tournamentId, onAdded }: Props) {
   const [round, setRound] = useState('')
   const [opponent, setOpponent] = useState('')
   const [result, setResult] = useState<'win' | 'loss'>('win')
-  const [games, setGames] = useState<ScoreGame[]>([{ game: 1, us: 0, them: 0 }])
+  const [us, setUs] = useState(0)
+  const [them, setThem] = useState(0)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-
-  function addGame() {
-    if (games.length >= 5) return
-    setGames((prev) => [...prev, { game: prev.length + 1, us: 0, them: 0 }])
-  }
-
-  function updateGame(idx: number, field: 'us' | 'them', value: number) {
-    const clamped = Math.max(0, Math.min(30, Number.isNaN(value) ? 0 : value))
-    setGames((prev) =>
-      prev.map((g, i) => (i === idx ? { ...g, [field]: clamped } : g))
-    )
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -42,7 +34,7 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
       round: round.trim(),
       opponent: opponent.trim() || null,
       result,
-      scores: games,
+      scores: [{ game: 1, us, them }],
     })
 
     if (insertError) {
@@ -54,7 +46,8 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
     setRound('')
     setOpponent('')
     setResult('win')
-    setGames([{ game: 1, us: 0, them: 0 }])
+    setUs(0)
+    setThem(0)
     setSaving(false)
     onAdded()
   }
@@ -67,7 +60,6 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
       )}
       <div className="grid grid-cols-2 gap-2">
         <input
-          id="match-round"
           value={round}
           onChange={(e) => setRound(e.target.value)}
           placeholder="라운드 (예: 8강)"
@@ -76,7 +68,6 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
           aria-label="라운드"
         />
         <input
-          id="match-opponent"
           value={opponent}
           onChange={(e) => setOpponent(e.target.value)}
           placeholder="상대 이름 (선택)"
@@ -84,7 +75,6 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
           aria-label="상대 이름"
         />
         <select
-          id="match-result"
           value={result}
           onChange={(e) => setResult(e.target.value as 'win' | 'loss')}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -94,39 +84,27 @@ export default function AddMatchForm({ tournamentId, onAdded }: Props) {
           <option value="loss">패</option>
         </select>
       </div>
-      <div className="mt-2 flex flex-col gap-1">
-        {games.map((g, i) => (
-          <div key={g.game} className="flex items-center gap-2 text-sm">
-            <span className="w-12 text-xs text-gray-500">게임 {g.game}</span>
-            <input
-              type="number"
-              min={0}
-              max={30}
-              value={g.us}
-              onChange={(e) => updateGame(i, 'us', Number(e.target.value))}
-              className="w-14 rounded border border-gray-300 px-2 py-1 text-center text-sm"
-              aria-label={`게임 ${g.game} 내 점수`}
-            />
-            <span className="text-gray-400" aria-hidden="true">:</span>
-            <input
-              type="number"
-              min={0}
-              max={30}
-              value={g.them}
-              onChange={(e) => updateGame(i, 'them', Number(e.target.value))}
-              className="w-14 rounded border border-gray-300 px-2 py-1 text-center text-sm"
-              aria-label={`게임 ${g.game} 상대 점수`}
-            />
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={addGame}
-          disabled={games.length >= 5}
-          className="mt-1 text-left text-xs text-violet-600 underline disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          + 게임 추가
-        </button>
+      <div className="mt-2 flex items-center gap-2">
+        <span className="text-xs text-gray-500 w-8">점수</span>
+        <input
+          type="number"
+          min={0}
+          max={30}
+          value={us}
+          onChange={(e) => setUs(clamp(Number(e.target.value)))}
+          className="w-14 rounded border border-gray-300 px-2 py-1 text-center text-sm"
+          aria-label="내 점수"
+        />
+        <span className="text-gray-400" aria-hidden="true">:</span>
+        <input
+          type="number"
+          min={0}
+          max={30}
+          value={them}
+          onChange={(e) => setThem(clamp(Number(e.target.value)))}
+          className="w-14 rounded border border-gray-300 px-2 py-1 text-center text-sm"
+          aria-label="상대 점수"
+        />
       </div>
       <button
         type="submit"

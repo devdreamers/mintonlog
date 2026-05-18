@@ -59,7 +59,11 @@ export default function MatchSection({
           />
         </div>
       )}
-      <MatchTimeline matches={matches} />
+      <MatchTimeline
+          matches={matches}
+          isLoggedIn={isLoggedIn}
+          onMatchUpdated={refreshMatches}
+        />
     </div>
   )
 }

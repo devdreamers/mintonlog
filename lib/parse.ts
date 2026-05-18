@@ -5,7 +5,7 @@ const PARSE_PROMPT = `이 배드민턴 대회 결과 스크린샷에서 다음 �
 {
   "name": "대회명 (모르면 null)",
   "date": "날짜 YYYY-MM-DD 형식 (모르면 null)",
-  "event": "종목 - 남복/여복/혼복/단/여단 중 하나 (모르면 null)",
+  "event": "종목 - 남복/여복/혼복/남단/여단 중 하나 (모르면 null)",
   "category": "부수 또는 조 (예: B조, A부, 모르면 null)",
   "placement": "최종 순위 또는 결과 (예: 1위, 8강, 우승, 모르면 null)",
   "confidence": {
