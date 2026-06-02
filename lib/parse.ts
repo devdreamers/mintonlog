@@ -1,7 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { ParseResult } from '@/types'
 
-const PARSE_PROMPT = `이 배드민턴 대회 결과 스크린샷에서 다음 정보를 추출해서 JSON으로만 응답해줘. 다른 텍스트 없이 JSON만:
+const PARSE_PROMPT = `이 배드민턴 대회 결과 스크린샷에서 다음 정보를 추출해서 JSON으로만 응답해줘. 마크다운 코드블록 없이 JSON만:
 {
   "name": "대회명 (모르면 null)",
   "date": "날짜 YYYY-MM-DD 형식 (모르면 null)",
@@ -24,37 +24,22 @@ export async function callClaudeVision(
   mimeType: string
 ): Promise<ParseResult | null> {
   try {
-    const client = new Anthropic()
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: mimeType as
-                  | 'image/jpeg'
-                  | 'image/png'
-                  | 'image/gif'
-                  | 'image/webp',
-                data: base64Image,
-              },
-            },
-            { type: 'text', text: PARSE_PROMPT },
-          ],
+    const result = await model.generateContent([
+      {
+        inlineData: {
+          mimeType: mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+          data: base64Image,
         },
-      ],
-    })
+      },
+      PARSE_PROMPT,
+    ])
 
-    const text =
-      response.content[0].type === 'text' ? response.content[0].text.trim() : ''
-
-    const parsed = JSON.parse(text)
+    const raw = result.response.text().trim()
+    const jsonText = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '').trim()
+    const parsed = JSON.parse(jsonText)
 
     return {
       name: parsed.name ?? null,
