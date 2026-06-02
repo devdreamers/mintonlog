@@ -91,7 +91,7 @@ export default function ParseConfirmForm({
 
       {/* 날짜 + 종목 */}
       <div className="grid grid-cols-2 gap-3">
-        <div>
+        <div className="min-w-0">
           <label htmlFor="field-date" className="mb-1 block text-sm font-medium text-gray-700">날짜</label>
           <input
             id="field-date"
@@ -103,7 +103,7 @@ export default function ParseConfirmForm({
           />
           {hint(confidence.date)}
         </div>
-        <div>
+        <div className="min-w-0">
           <label htmlFor="field-event" className="mb-1 block text-sm font-medium text-gray-700">종목</label>
           <select
             id="field-event"
