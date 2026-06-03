@@ -9,14 +9,13 @@ interface Props {
   categories: string[]
 }
 
-function FilterChipsInner({ years, events, categories }: Props) {
+function FilterChipsInner({ years, events }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const activeYear = searchParams.get('year') ?? ''
   const activeEvent = searchParams.get('event') ?? ''
-  const activeCategory = searchParams.get('category') ?? ''
 
-  function setFilter(key: 'year' | 'event' | 'category', value: string) {
+  function setFilter(key: 'year' | 'event', value: string) {
     const params = new URLSearchParams(searchParams.toString())
     if (params.get(key) === value) {
       params.delete(key)
@@ -40,8 +39,7 @@ function FilterChipsInner({ years, events, categories }: Props) {
       {chips.map(({ label, key, value }) => {
         const isActive =
           (key === 'year' && activeYear === value) ||
-          (key === 'event' && activeEvent === value) ||
-          (key === 'category' && activeCategory === value)
+          (key === 'event' && activeEvent === value)
         return (
           <button
             type="button"
