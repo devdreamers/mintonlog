@@ -33,7 +33,6 @@ function FilterChipsInner({ years, events, categories }: Props) {
     ...years.map((y) => ({ label: y, key: 'year' as const, value: y })),
     ...safeEvents.map((e) => ({ label: e, key: 'event' as const, value: e })),
     { label: '수상만', key: 'event' as const, value: 'award' },
-    ...categories.map((c) => ({ label: c, key: 'category' as const, value: c })),
   ]
 
   return (
