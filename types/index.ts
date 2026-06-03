@@ -31,6 +31,15 @@ export interface ScoreGame {
   them: number
 }
 
+export interface ParsedMatch {
+  round: string
+  result: 'win' | 'loss'
+  opponent1: string
+  opponent2: string
+  score_us: number | null
+  score_them: number | null
+}
+
 export interface ParseResult {
   name: string | null
   date: string | null
@@ -38,6 +47,7 @@ export interface ParseResult {
   category: string | null
   placement: string | null
   partner: string | null
+  matches: ParsedMatch[]
   confidence: {
     name: number
     date: number

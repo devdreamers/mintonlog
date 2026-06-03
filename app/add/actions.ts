@@ -3,6 +3,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import type { ParsedMatch } from '@/types'
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
@@ -24,6 +25,9 @@ export async function saveTournament(formData: FormData) {
   const placement = formData.get('placement') as string
   const venue = (formData.get('venue') as string) || null
   const partner = (formData.get('partner') as string) || null
+  const matchesJson = (formData.get('matches_json') as string) || '[]'
+  let parsedMatches: ParsedMatch[] = []
+  try { parsedMatches = JSON.parse(matchesJson) } catch { parsedMatches = [] }
 
   if (file && file.size > 0) {
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
@@ -68,6 +72,25 @@ export async function saveTournament(formData: FormData) {
 
   if (error || !tournament) {
     throw new Error(error?.message ?? 'Failed to save tournament')
+  }
+
+  if (parsedMatches.length > 0) {
+    const matchRows = parsedMatches
+      .filter((m) => m.round?.trim())
+      .map((m) => ({
+        tournament_id: tournament.id,
+        round: m.round.trim(),
+        opponent_team: null,
+        opponent1: m.opponent1?.trim() || null,
+        opponent2: m.opponent2?.trim() || null,
+        result: m.result === 'loss' ? 'loss' : 'win',
+        scores: (m.score_us != null && m.score_them != null)
+          ? [{ game: 1, us: m.score_us, them: m.score_them }]
+          : [],
+      }))
+    if (matchRows.length > 0) {
+      await supabase.from('matches').insert(matchRows)
+    }
   }
 
   redirect(`/${tournament.id}`)

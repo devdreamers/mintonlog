@@ -10,11 +10,20 @@ const PARSE_PROMPT = `이 배드민턴 대회 관련 스크린샷을 꼼꼼히 �
 - category: 나이대+급수 조합 (예: "30D", "2030BC", "40C", 없으면 null)
 - placement: 최종 순위 또는 결과 (예: "1위", "우승", "8강", 없으면 null)
 - partner: 파트너 이름 — 복식이라면 같은 팀 선수 이름 (없으면 null)
-- confidence: 각 필드 확실도 0.0~1.0
+- matches: 보이는 개별 경기 목록 (없으면 빈 배열 [])
+  각 경기:
+  - round: 라운드명 (예: "조별예선", "8강", "준결승", "결승". 모르면 "예선")
+  - result: "win" 또는 "loss"
+  - opponent1: 상대 선수1 이름 (없으면 "")
+  - opponent2: 상대 선수2 이름 — 단식이면 "" (없으면 "")
+  - score_us: 내 점수 숫자 (없으면 null)
+  - score_them: 상대 점수 숫자 (없으면 null)
+- confidence: name/date/event/category/placement/partner 각각 0.0~1.0
 
 힌트:
 - 경기 결과 목록이 보이면 전승이면 "우승" 또는 "1위"일 가능성이 높음
 - 여복/남복/혼복 텍스트가 반복되면 그게 종목
+- 점수가 높은 쪽이 이긴 것 (21-19면 21점인 팀이 승)
 - 이미지에서 보이는 모든 텍스트를 빠짐없이 읽어줘`
 
 export async function callClaudeVision(
@@ -47,6 +56,7 @@ export async function callClaudeVision(
       category: parsed.category ?? null,
       placement: parsed.placement ?? null,
       partner: parsed.partner ?? null,
+      matches: Array.isArray(parsed.matches) ? parsed.matches : [],
       confidence: parsed.confidence ?? {
         name: 0,
         date: 0,

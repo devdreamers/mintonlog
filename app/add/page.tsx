@@ -11,6 +11,7 @@ type Step = 'choose' | 'upload' | 'confirm'
 
 const EMPTY_PARSE: ParseResult = {
   name: null, date: null, event: null, category: null, placement: null, partner: null,
+  matches: [],
   confidence: { name: 0, date: 0, event: 0, category: 0, placement: 0, partner: 0 },
 }
 
