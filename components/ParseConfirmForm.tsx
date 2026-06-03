@@ -99,7 +99,7 @@ export default function ParseConfirmForm({
           defaultValue={parsed.date ?? ''}
           required
           className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none ${cls(confidence.date)}`}
-          style={{ maxWidth: '100%' }}
+          style={{ WebkitAppearance: 'none', width: '100%', boxSizing: 'border-box' }}
         />
         {hint(confidence.date)}
       </div>
