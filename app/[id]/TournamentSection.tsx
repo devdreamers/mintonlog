@@ -41,6 +41,22 @@ export default function TournamentSection({ tournament, isLoggedIn }: Props) {
   const [edit, setEdit] = useState<EditState>(toEditState(tournament))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  async function handleDelete() {
+    setDeleting(true)
+    const supabase = createClient()
+    await supabase.from('matches').delete().eq('tournament_id', tournament.id)
+    const { error: err } = await supabase.from('tournaments').delete().eq('id', tournament.id)
+    if (err) {
+      setError('삭제에 실패했어요. 다시 시도해주세요.')
+      setDeleting(false)
+      return
+    }
+    router.push('/')
+    router.refresh()
+  }
 
   const meta = [tournament.event, tournament.category, tournament.venue]
     .filter(Boolean)
@@ -195,13 +211,44 @@ export default function TournamentSection({ tournament, isLoggedIn }: Props) {
             <div className="flex shrink-0 flex-col items-end gap-2">
               <span className="text-lg font-bold text-violet-600">{tournament.placement}</span>
               {isLoggedIn && (
-                <button
-                  type="button"
-                  onClick={() => setEditing(true)}
-                  className="rounded-lg px-2 py-1 text-xs text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                >
-                  수정
-                </button>
+                confirmDelete ? (
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-500">삭제할까요?</span>
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      className="rounded-lg bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-400 disabled:opacity-50 transition-colors"
+                    >
+                      {deleting ? '…' : '확인'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(false)}
+                      disabled={deleting}
+                      className="rounded-lg border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(true)}
+                      className="rounded-lg px-2 py-1 text-xs text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                    >
+                      수정
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(true)}
+                      className="rounded-lg px-2 py-1 text-xs text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )
               )}
             </div>
           </div>
