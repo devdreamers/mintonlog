@@ -56,7 +56,8 @@ export async function callClaudeVision(
         partner: 0,
       },
     }
-  } catch {
+  } catch (e) {
+    console.error('[parse] Gemini error:', e instanceof Error ? e.message : e)
     return null
   }
 }
