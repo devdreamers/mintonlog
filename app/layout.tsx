@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="bg-gray-50 min-h-screen">
+      <body className="bg-gray-50 min-h-screen overflow-x-hidden">
         <NavBar />
         {children}
       </body>
