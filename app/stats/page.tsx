@@ -16,12 +16,19 @@ function bestPlacement(placements: string[]): string | null {
 export default async function StatsPage() {
   const supabase = await createClient()
 
-  const [{ data: rawT }, { data: rawM }] = await Promise.all([
-    supabase.from('tournaments').select('*').order('date', { ascending: true }),
-    supabase.from('matches').select('*'),
-  ])
+  const { data: rawT } = await supabase
+    .from('tournaments')
+    .select('*')
+    .order('date', { ascending: true })
 
   const tournaments = (rawT ?? []) as Tournament[]
+
+  // matches는 반드시 본인 대회 ID 기준으로만 조회
+  const tournamentIds = tournaments.map((t) => t.id)
+  const { data: rawM } = tournamentIds.length > 0
+    ? await supabase.from('matches').select('*').in('tournament_id', tournamentIds)
+    : { data: [] }
+
   const matches = (rawM ?? []) as Match[]
 
   // Group matches by tournament
