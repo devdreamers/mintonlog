@@ -13,17 +13,17 @@ export default async function SharedPage({
   const { token } = await params
   const supabase = createServiceClient()
 
-  // Validate token
+  // Validate token and get owner's user_id
   const { data: settings } = await supabase
     .from('share_settings')
-    .select('token')
+    .select('token, user_id')
     .eq('token', token)
     .single()
 
   if (!settings) notFound()
 
   const [{ data: rawT }, { data: rawM }] = await Promise.all([
-    supabase.from('tournaments').select('*').order('date', { ascending: false }),
+    supabase.from('tournaments').select('*').eq('user_id', settings.user_id).order('date', { ascending: false }),
     supabase.from('matches').select('*'),
   ])
 

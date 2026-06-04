@@ -16,9 +16,11 @@ export default function ShareButton({ initialToken }: Props) {
     if (token) return token
     setLoading(true)
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return null }
     const { data, error } = await supabase
       .from('share_settings')
-      .upsert({ id: true }, { onConflict: 'id' })
+      .upsert({ user_id: user.id }, { onConflict: 'user_id' })
       .select('token')
       .single()
     setLoading(false)

@@ -66,7 +66,7 @@ export async function saveTournament(formData: FormData) {
 
   const { data: tournament, error } = await supabase
     .from('tournaments')
-    .insert({ name, date, event, category, placement, venue, partner, screenshot_url })
+    .insert({ name, date, event, category, placement, venue, partner, screenshot_url, user_id: user.id })
     .select()
     .single()
 
