@@ -22,10 +22,17 @@ export default async function SharedPage({
 
   if (!settings) notFound()
 
-  const [{ data: rawT }, { data: rawM }] = await Promise.all([
-    supabase.from('tournaments').select('*').eq('user_id', settings.user_id).order('date', { ascending: false }),
-    supabase.from('matches').select('*'),
-  ])
+  const { data: rawT } = await supabase
+    .from('tournaments')
+    .select('*')
+    .eq('user_id', settings.user_id)
+    .order('date', { ascending: false })
+
+  const tournamentIds = (rawT ?? []).map((t) => t.id)
+
+  const { data: rawM } = tournamentIds.length > 0
+    ? await supabase.from('matches').select('*').in('tournament_id', tournamentIds)
+    : { data: [] }
 
   const tournaments = (rawT ?? []) as Tournament[]
   const matches = (rawM ?? []) as Match[]
