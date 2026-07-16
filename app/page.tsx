@@ -60,10 +60,12 @@ export default async function HomePage({
   if (filteredError) throw filteredError
 
   // Share token (non-blocking — null if table doesn't exist yet)
+  const { data: { user } } = await supabase.auth.getUser()
   const { data: shareData } = await supabase
     .from('share_settings')
     .select('token')
-    .single()
+    .eq('user_id', user?.id ?? '')
+    .maybeSingle()
   const shareToken = shareData?.token ?? null
 
   // Group by year
